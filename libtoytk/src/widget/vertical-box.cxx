@@ -1,0 +1,71 @@
+
+#include <toytk/widget/vertical-box.hxx>
+
+#include <algorithm>
+
+namespace toytk
+{
+    VerticalBox::VerticalBox()
+    {
+    }
+
+    void VerticalBox::layout()
+    {
+	auto pos = get_position();
+	auto dim = get_dimension();
+	std::int32_t y_acc = pos.y;
+
+	for (auto child : m_children)
+	{
+	    auto cdim = child.get().get_preferred_dimension();
+	    child.get().set_position(Position { pos.x, y_acc });
+	    child.get().set_dimension(Dimension { dim.width, cdim.height });
+	    y_acc += cdim.height;
+	}
+    }
+
+    void VerticalBox::paint(cairo_t *) const
+    {
+    }
+
+    Dimension VerticalBox::get_preferred_dimension() const
+    {
+	Dimension dim { 0, 0 };
+
+	for (auto child : m_children)
+	{
+	    auto cdim = child.get().get_preferred_dimension();
+	    dim.width = std::max(cdim.width, dim.width);
+	    dim.height += cdim.height;
+	}
+
+	return dim;
+    }
+
+    void VerticalBox::for_each_child(void (*func)(Widget &, void *), void *data)
+    {
+	std::ranges::for_each(m_children, [func, data](auto widget) {
+	    func(widget.get(), data);
+	});
+    }
+
+    void VerticalBox::add_child(Widget &child)
+    {
+	m_children.push_back(child);
+	child.set_parent(*this);
+    }
+
+    void VerticalBox::remove_child(Widget &child)
+    {
+	child.reset_parent();
+
+	auto i = std::ranges::find_if(m_children, [&child](auto widget) {
+	    return &widget.get() == &child;
+	});
+
+	if (i != m_children.end())
+	{
+	    m_children.erase(i);
+	}
+    }
+}
