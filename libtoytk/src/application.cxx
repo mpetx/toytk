@@ -15,16 +15,6 @@ namespace toytk
 	    return this_.m_display;
 	}
 
-	void application_add_window(Application &this_, wl_surface *surface, Window *window)
-	{
-	    this_.m_windows.emplace(surface, window);
-	}
-
-	void application_remove_window(Application &this_, wl_surface *surface)
-	{
-	    this_.m_windows.erase(surface);
-	}
-
 	void ApplicationLowEventHandlerVisitor::operator()(const PointerEnterLowEvent &levent) const
 	{
 	    auto win = application.get_window_from_surface(levent.surface);
@@ -309,11 +299,20 @@ namespace toytk
 	    detail::ApplicationLowEventHandlerVisitor visitor { this_ };
 	    std::visit(visitor, event);
 
-	    for (auto &pair : this_.m_windows)
+	    for (auto i = this_.m_windows.begin(); i != this_.m_windows.end();)
 	    {
-		if (pair.second->get_redraw_needed())
+		if (i->second->get_should_close())
 		{
-		    pair.second->redraw();
+		    i = this_.m_windows.erase(i);
+		}
+		else
+		{
+		    if (i->second->get_redraw_needed())
+		    {
+			i->second->redraw();
+		    }
+
+		    ++i;
 		}
 	    }
 	};
@@ -366,6 +365,17 @@ namespace toytk
     void Application::dispatch_events()
     {
  	m_display.dispatch_low_events();
+    }
+
+    std::reference_wrapper<Window> Application::create_window(std::string_view title)
+    {
+	std::unique_ptr<Window> p { new Window { *this, title } };
+	Window *rp = p.get();
+
+	wl_surface *surface = p->m_surface.get();
+	m_windows.emplace(surface, std::move(p));
+
+	return *rp;
     }
 
     bool Application::has_window() const

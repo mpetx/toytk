@@ -27,7 +27,7 @@ static toytk::Bubbling quit_button_event_handler(toytk::Widget &, toytk::Window 
 	return toytk::Bubbling::bubble;
     }
 
-    win.destroy();
+    win.set_should_close();
 
     return toytk::Bubbling::stop;
 }
@@ -87,9 +87,9 @@ int main()
     frame_dim.width = std::max(160, frame_dim.width);
     frame.set_dimension(frame_dim);
 
-    toytk::Window win { app, "ToyTk Demo" };
-    win.set_root(frame);
-    win.set_minimal_dimension(frame.get_dimension());
+    auto win = app.create_window("ToyTk Demo");
+    win.get().set_root(frame);
+    win.get().set_minimal_dimension(frame.get_dimension());
 
     while (app && app.has_window())
     {

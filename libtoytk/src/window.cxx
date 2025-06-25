@@ -56,17 +56,10 @@ namespace toytk
 	m_shell_surface.reset(wl_shell_get_shell_surface(disp.get_shell(), m_surface.get()));
 	wl_shell_surface_add_listener(m_shell_surface.get(), &shell_surface_listener, this);
 
-	detail::application_add_window(app, m_surface.get(), this);
-
 	wl_shell_surface_set_toplevel(m_shell_surface.get());
 	wl_shell_surface_set_class(m_shell_surface.get(), app.get_class().c_str());
 	wl_shell_surface_set_title(m_shell_surface.get(), m_title.c_str());
 	wl_surface_commit(m_surface.get());
-    }
-
-    Window::~Window()
-    {
-	destroy();
     }
 
     Application &Window::get_application() const
@@ -88,6 +81,16 @@ namespace toytk
     wl_output *Window::get_output() const
     {
 	return m_output;
+    }
+
+    bool Window::get_should_close() const
+    {
+	return m_should_close;
+    }
+
+    void Window::set_should_close()
+    {
+	m_should_close = true;
     }
 
     Dimension Window::get_minimal_dimension() const
@@ -168,21 +171,6 @@ namespace toytk
 	wl_surface_attach(m_surface.get(), buffer.get_buffer(), 0, 0);
 	wl_surface_damage(m_surface.get(), 0, 0, dim.width, dim.height);
 	wl_surface_commit(m_surface.get());
-    }
-
-    void Window::destroy()
-    {
-	detail::application_remove_window(m_application, m_surface.get());
-	m_root = std::nullopt;
-	m_output = nullptr;
-	m_buffers[0].destroy();
-	m_buffers[1].destroy();
-	m_buffers_busy[0] = false;
-	m_buffers_busy[1] = false;
-	m_redraw_needed = false;
-	m_shell_surface.reset();
-	m_surface.reset();
-	m_title = "";
     }
 
     void Window::handle_seat_delete(wl_seat *seat)

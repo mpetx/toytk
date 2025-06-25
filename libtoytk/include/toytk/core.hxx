@@ -27,8 +27,6 @@ namespace toytk
     namespace detail
     {
 	Display &application_get_display(Application &);
-	void application_add_window(Application &, wl_surface *, Window *);
-	void application_remove_window(Application &, wl_surface *);
 
 	struct ApplicationLowEventHandlerVisitor
 	{
@@ -51,12 +49,10 @@ namespace toytk
     {
 	detail::Display m_display;
 	std::string m_class;
-	std::unordered_map<wl_surface *, Window *> m_windows;
+	std::unordered_map<wl_surface *, std::unique_ptr<Window>> m_windows;
 	void initialize();
 
 	friend detail::Display &detail::application_get_display(Application &);
-	friend void detail::application_add_window(Application &, wl_surface *, Window *);
-	friend void detail::application_remove_window(Application &, wl_surface *);
 
 	friend detail::ApplicationLowEventHandlerVisitor;
 
@@ -77,6 +73,7 @@ namespace toytk
 
 	void dispatch_events();
 
+	std::reference_wrapper<Window> create_window(std::string_view);
 	bool has_window() const;
 	std::optional<std::reference_wrapper<Window>> get_window_from_surface(wl_surface *);
     };
@@ -119,6 +116,7 @@ namespace toytk
 	detail::WlSurfacePtr m_surface;
 	detail::WlShellSurfacePtr m_shell_surface;
 	wl_output *m_output;
+	bool m_should_close = false;
 
 	Dimension m_minimal_dimension { 1, 1 };
 
@@ -131,6 +129,8 @@ namespace toytk
 	std::map<wl_seat *, std::vector<std::reference_wrapper<Widget>>> m_hover_stacks;
 	std::map<wl_seat *, std::reference_wrapper<Widget>> m_foci;
 	std::map<wl_seat *, std::reference_wrapper<Widget>> m_grab;
+
+	Window(Application &, std::string_view);
 
 	int get_free_buffer_index() const;
 
@@ -145,13 +145,10 @@ namespace toytk
 	static void handle_buffer_release(void *, wl_buffer *);
 	static const wl_buffer_listener buffer_listener;
 
+	friend Application;
 	friend detail::ApplicationLowEventHandlerVisitor;
 
     public:
-
-	Window(Application &, std::string_view);
-
-	~Window();
 
 	Window(const Window &) = delete;
 	Window(Window &&) = delete;
@@ -165,6 +162,9 @@ namespace toytk
 
 	wl_output *get_output() const;
 
+	bool get_should_close() const;
+	void set_should_close();
+
 	Dimension get_minimal_dimension() const;
 	void set_minimal_dimension(const Dimension &);
 
@@ -175,8 +175,6 @@ namespace toytk
 	void set_root(Widget &);
 
 	void redraw();
-
-	void destroy();
 
 	void handle_seat_delete(wl_seat *);
 	void notify_widget_removal(Widget &);
