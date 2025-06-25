@@ -177,6 +177,7 @@ namespace toytk
     {
 	m_hover_stacks.erase(seat);
 	m_foci.erase(seat);
+	m_grab.erase(seat);
     }
 
     void Window::notify_widget_removal(Widget &widget)
