@@ -115,12 +115,19 @@ namespace toytk
 
     std::optional<std::reference_wrapper<Widget>> Window::get_root() const
     {
-	return m_root;
+	if (m_root)
+	{
+	    return *m_root;
+	}
+	else
+	{
+	    return std::nullopt;
+	}
     }
 
-    void Window::set_root(Widget &widget)
+    void Window::set_root(PmrPtr<Widget> &&widget)
     {
-	m_root = widget;
+	m_root = std::move(widget);
 
 	m_redraw_needed = true;
 	redraw();
@@ -128,7 +135,7 @@ namespace toytk
 
     void Window::redraw()
     {
-	if (!m_root.has_value() || !m_surface)
+	if (!m_root || !m_surface)
 	{
 	    m_redraw_needed = false;
 	    return;
@@ -143,7 +150,7 @@ namespace toytk
 
 	detail::Buffer &buffer = m_buffers[index];
 
-	const Dimension &dim = m_root->get().get_dimension();
+	const Dimension &dim = m_root->get_dimension();
 
 	buffer.resize(dim.width, dim.height);
 
@@ -157,7 +164,7 @@ namespace toytk
 	detail::CairoSurfacePtr surface { cairo_image_surface_create_for_data(data, CAIRO_FORMAT_ARGB32, dim.width, dim.height, dim.width * 4) };
 	detail::CairoPtr cr { cairo_create(surface.get()) };
 
-	m_root->get().draw_recursively(cr.get());
+	m_root->draw_recursively(cr.get());
 
 	cr.reset();
 	surface.reset();
@@ -253,9 +260,9 @@ namespace toytk
     {
 	Window &win = *reinterpret_cast<Window *>(data);
 
-	if (win.m_root.has_value())
+	if (win.m_root)
 	{
-	    win.m_root->get().set_dimension(Dimension {
+	    win.m_root->set_dimension(Dimension {
 		    std::max(width, win.m_minimal_dimension.width),
 		    std::max(height, win.m_minimal_dimension.height)
 		});

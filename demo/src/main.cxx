@@ -52,44 +52,54 @@ int main()
     cairo_font_face_destroy(sans_face);
     sans_face = nullptr;
 
-    toytk::Button hello_button;
-    hello_button.set_text("Hello");
-    hello_button.set_font(sans);
-    hello_button.add_event_handler(hello_button_event_handler);
+    std::pmr::memory_resource *mr = std::pmr::new_delete_resource();
+    toytk::PmrDelete<toytk::Widget> del { mr };
+    std::pmr::polymorphic_allocator alloc { mr };
 
-    toytk::PaddingBox hello_pbox;
-    hello_pbox.set_top_padding(8);
-    hello_pbox.set_bottom_padding(8);
-    hello_pbox.set_left_padding(8);
-    hello_pbox.set_right_padding(8);
-    hello_pbox.set_content(hello_button);
+    auto hello_button = alloc.new_object<toytk::Button>();
+    hello_button->set_text("Hello");
+    hello_button->set_font(sans);
+    hello_button->add_event_handler(hello_button_event_handler);
+    toytk::PmrPtr<toytk::Widget> owned_hello_button { hello_button, del };
 
-    toytk::Button quit_button;
-    quit_button.set_text("Quit");
-    quit_button.set_font(sans);
-    quit_button.add_event_handler(quit_button_event_handler);
+    auto hello_pbox = alloc.new_object<toytk::PaddingBox>();
+    hello_pbox->set_top_padding(8);
+    hello_pbox->set_bottom_padding(8);
+    hello_pbox->set_left_padding(8);
+    hello_pbox->set_right_padding(8);
+    hello_pbox->set_content(std::move(owned_hello_button));
+    toytk::PmrPtr<toytk::Widget> owned_hello_pbox { hello_pbox, del };
 
-    toytk::PaddingBox quit_pbox;
-    quit_pbox.set_bottom_padding(8);
-    quit_pbox.set_left_padding(8);
-    quit_pbox.set_right_padding(8);
-    quit_pbox.set_content(quit_button);
+    auto quit_button = alloc.new_object<toytk::Button>();
+    quit_button->set_text("Quit");
+    quit_button->set_font(sans);
+    quit_button->add_event_handler(quit_button_event_handler);
+    toytk::PmrPtr<toytk::Widget> owned_quit_button { quit_button, del };
 
-    toytk::VerticalBox vbox;
-    vbox.add_child(hello_pbox);
-    vbox.add_child(quit_pbox);
+    auto quit_pbox = alloc.new_object<toytk::PaddingBox>();
+    quit_pbox->set_bottom_padding(8);
+    quit_pbox->set_left_padding(8);
+    quit_pbox->set_right_padding(8);
+    quit_pbox->set_content(std::move(owned_quit_button));
+    toytk::PmrPtr<toytk::Widget> owned_quit_pbox { quit_pbox, del };
 
-    toytk::Frame frame { true };
-    frame.set_title("ToyTk Demo");
-    frame.set_font(serif);
-    frame.set_content(vbox);
-    auto frame_dim = frame.get_preferred_dimension();
+    auto vbox = alloc.new_object<toytk::VerticalBox>();
+    vbox->add_child(std::move(owned_hello_pbox));
+    vbox->add_child(std::move(owned_quit_pbox));
+    toytk::PmrPtr<toytk::Widget> owned_vbox { vbox, del };
+
+    auto frame = alloc.new_object<toytk::Frame>(true);
+    frame->set_title("ToyTk Demo");
+    frame->set_font(serif);
+    frame->set_content(std::move(owned_vbox));
+    auto frame_dim = frame->get_preferred_dimension();
     frame_dim.width = std::max(160, frame_dim.width);
-    frame.set_dimension(frame_dim);
+    frame->set_dimension(frame_dim);
+    toytk::PmrPtr<toytk::Widget> owned_frame { frame, del };
 
     auto win = app.create_window("ToyTk Demo");
-    win.get().set_root(frame);
-    win.get().set_minimal_dimension(frame.get_dimension());
+    win.get().set_root(std::move(owned_frame));
+    win.get().set_minimal_dimension(frame_dim);
 
     while (app && app.has_window())
     {

@@ -7,7 +7,7 @@ namespace toytk
 {
     class VerticalBox : public Widget
     {
-	std::vector<std::reference_wrapper<Widget>> m_children;
+	std::vector<PmrPtr<Widget>> m_children;
 
     public:
 
@@ -18,8 +18,8 @@ namespace toytk
 	Dimension get_preferred_dimension() const override;
 	void for_each_child(void (*)(Widget &, void *), void *) override;
 
-	void add_child(Widget &);
-	void remove_child(Widget &);
+	void add_child(PmrPtr<Widget> &&);
+	void delete_child(Widget &);
     };
 }
 

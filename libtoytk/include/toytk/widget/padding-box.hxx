@@ -7,7 +7,7 @@ namespace toytk
 {
     class PaddingBox : public Widget
     {
-	std::optional<std::reference_wrapper<Widget>> m_content;
+	PmrPtr<Widget> m_content;
 	std::int32_t m_top_padding = 0;
 	std::int32_t m_bottom_padding = 0;
 	std::int32_t m_left_padding = 0;
@@ -23,7 +23,7 @@ namespace toytk
 	void for_each_child(void (*)(Widget &, void *), void *) override;
 
 	std::optional<std::reference_wrapper<Widget>> get_content() const;
-	void set_content(Widget &);
+	void set_content(PmrPtr<Widget> &&);
 	void reset_content();
 
 	std::int32_t get_top_padding() const;

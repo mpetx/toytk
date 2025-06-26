@@ -124,7 +124,7 @@ namespace toytk
 	bool m_buffers_busy[2] { false, false };
 	bool m_redraw_needed = false;
 
-	std::optional<std::reference_wrapper<Widget>> m_root;
+	PmrPtr<Widget> m_root;
 
 	std::map<wl_seat *, std::vector<std::reference_wrapper<Widget>>> m_hover_stacks;
 	std::map<wl_seat *, std::reference_wrapper<Widget>> m_foci;
@@ -172,7 +172,7 @@ namespace toytk
 	void set_redraw_needed();
 
 	std::optional<std::reference_wrapper<Widget>> get_root() const;
-	void set_root(Widget &);
+	void set_root(PmrPtr<Widget> &&);
 
 	void redraw();
 
@@ -238,8 +238,9 @@ namespace toytk
 	void set_dimension(const Dimension &);
 
 	std::optional<std::reference_wrapper<Widget>> get_parent() const;
-	void set_parent(Widget &);
-	void reset_parent();
+
+	void own_child(PmrPtr<Widget> &);
+	void unown_child(PmrPtr<Widget> &);
 
 	bool is_hovered() const;
 	bool is_active() const;

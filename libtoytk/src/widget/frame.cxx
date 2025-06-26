@@ -13,15 +13,15 @@ namespace toytk
 
     void Frame::layout()
     {
-	if (!m_content.has_value())
+	if (!m_content)
 	{
 	    return;
 	}
 
 	auto pos = get_content_position();
-	m_content->get().set_position(pos);
+	m_content->set_position(pos);
 	auto dim = get_content_dimension();
-	m_content->get().set_dimension(dim);
+	m_content->set_dimension(dim);
     }
 
     void Frame::paint(cairo_t *cr) const
@@ -57,9 +57,9 @@ namespace toytk
 
     Dimension Frame::get_preferred_dimension() const
     {
-	if (m_content.has_value())
+	if (m_content)
 	{
-	    auto cdim = m_content->get().get_preferred_dimension();
+	    auto cdim = m_content->get_preferred_dimension();
 	    return Dimension {
 		border_width * 2 + cdim.width,
 		border_width + title_bar_width + cdim.height
@@ -76,30 +76,38 @@ namespace toytk
 
     void Frame::for_each_child(void (*func)(Widget &, void *), void *data)
     {
-	if (m_content.has_value())
+	if (m_content)
 	{
-	    func(m_content->get(), data);
+	    func(*m_content, data);
 	}
     }
 
     std::optional<std::reference_wrapper<Widget>> Frame::get_content() const
     {
-	return m_content;
+	if (m_content)
+	{
+	    return *m_content;
+	}
+	else
+	{
+	    return std::nullopt;
+	}
     }
 
-    void Frame::set_content(Widget &widget)
+    void Frame::set_content(PmrPtr<Widget> &&widget)
     {
 	reset_content();
-	m_content = widget;
-	widget.set_parent(*this);
+
+	m_content = std::move(widget);
+	own_child(m_content);
     }
 
     void Frame::reset_content()
     {
-	if (m_content.has_value())
+	if (m_content)
 	{
-	    m_content->get().reset_parent();
-	    m_content = std::nullopt;
+	    unown_child(m_content);
+	    m_content.reset();
 	}
     }
 

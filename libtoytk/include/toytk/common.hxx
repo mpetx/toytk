@@ -19,53 +19,83 @@ namespace toytk
     };
 
     template <typename T>
-    class PolymorphicDelete
+    class PmrDelete
     {
-	std::reference_wrapper<std::pmr::polymorphic_allocator<T>> m_allocator;
+	std::pmr::memory_resource *m_memory_resource;
 
     public:
 
-	explicit PolymorphicDelete(std::pmr::polymorphic_allocator<T> &);
-	PolymorphicDelete(const PolymorphicDelete &);
-	PolymorphicDelete &operator=(const PolymorphicDelete &);
-
-	PolymorphicDelete() = delete;
-	PolymorphicDelete(PolymorphicDelete &&) = delete;
-	PolymorphicDelete &operator=(PolymorphicDelete &&) = delete;
+	PmrDelete();
+	explicit PmrDelete(std::pmr::memory_resource *);
+	PmrDelete(const PmrDelete &);
+	PmrDelete(PmrDelete &&);
+	PmrDelete &operator=(const PmrDelete &);
+	PmrDelete &operator=(PmrDelete &&);
 
 	void operator()(T *) const;
     };
 
     template <typename T>
-    using PolymorphicPtr = std::unique_ptr<T, PolymorphicDelete<T>>;
+    using PmrPtr = std::unique_ptr<T, PmrDelete<T>>;
 }
 
 namespace toytk
 {
     template <typename T>
-    PolymorphicDelete<T>::PolymorphicDelete(std::pmr::polymorphic_allocator<T> &alloc)
-	: m_allocator { alloc }
+    PmrDelete<T>::PmrDelete()
+	: m_memory_resource { std::pmr::get_default_resource() }
     {
     }
 
     template <typename T>
-    PolymorphicDelete<T>::PolymorphicDelete(const PolymorphicDelete &del)
-	: m_allocator { del.m_allocator }
+    PmrDelete<T>::PmrDelete(std::pmr::memory_resource *mr)
+	: m_memory_resource { mr }
     {
     }
 
     template <typename T>
-    PolymorphicDelete<T> &PolymorphicDelete<T>::operator=(const PolymorphicDelete &del)
+    PmrDelete<T>::PmrDelete(const PmrDelete &del)
+	: m_memory_resource { del.m_memory_resource }
     {
-	m_allocator = del.m_allocator;
     }
 
     template <typename T>
-    void PolymorphicDelete<T>::operator()(T *p) const
+    PmrDelete<T>::PmrDelete(PmrDelete &&del)
+	: m_memory_resource { del.m_memory_resource }
+    {
+	del.m_memory_resource = std::pmr::get_default_resource();
+    }
+
+    template <typename T>
+    PmrDelete<T> &PmrDelete<T>::operator=(const PmrDelete &del)
+    {
+	m_memory_resource = del.m_memory_resource;
+
+	return *this;
+    }
+
+    template <typename T>
+    PmrDelete<T> &PmrDelete<T>::operator=(PmrDelete &&del)
+    {
+	if (this == &del)
+	{
+	    return *this;
+	}
+
+	m_memory_resource = del.m_memory_resource;
+
+	del.m_memory_resource = std::pmr::get_default_resource();
+
+	return *this;
+    }
+
+    template <typename T>
+    void PmrDelete<T>::operator()(T *p) const
     {
 	if (p)
 	{
-	    m_allocator->get().delete_object(p);
+	    std::pmr::polymorphic_allocator<T> alloc { m_memory_resource };
+	    alloc.delete_object(p);
 	}
     }
 }

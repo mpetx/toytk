@@ -11,7 +11,7 @@ namespace toytk
 {
     class Frame : public Widget
     {
-	std::optional<std::reference_wrapper<Widget>> m_content;
+	PmrPtr<Widget> m_content;
 	std::string m_title;
 	Font m_font;
 
@@ -43,7 +43,7 @@ namespace toytk
 	void for_each_child(void (*)(Widget &, void *), void *) override;
 
 	std::optional<std::reference_wrapper<Widget>> get_content() const;
-	void set_content(Widget &);
+	void set_content(PmrPtr<Widget> &&);
 	void reset_content();
 
 	const Font &get_font() const;

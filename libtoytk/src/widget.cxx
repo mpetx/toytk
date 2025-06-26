@@ -75,17 +75,17 @@ namespace toytk
 	return m_parent;
     }
 
-    void Widget::set_parent(Widget &widget)
+    void Widget::own_child(PmrPtr<Widget> &child)
     {
-	m_hover_count = 0;
-	m_activation_count = 0;
-	m_focus_count = 0;
-	m_parent = widget;
+	child->m_hover_count = 0;
+	child->m_activation_count = 0;
+	child->m_focus_count = 0;
+	child->m_parent = *this;
     }
 
-    void Widget::reset_parent()
+    void Widget::unown_child(PmrPtr<Widget> &child)
     {
-	m_parent = std::nullopt;
+	child->m_parent = std::nullopt;
     }
 
     bool Widget::is_hovered() const

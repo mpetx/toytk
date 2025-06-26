@@ -11,7 +11,7 @@ namespace toytk
 
     void PaddingBox::layout()
     {
-	if (!m_content.has_value())
+	if (!m_content)
 	{
 	    return;
 	}
@@ -29,14 +29,14 @@ namespace toytk
 	    pos.y + static_cast<std::int32_t>(y_ratio * y_total_padding)
 	};
 
-	m_content->get().set_position(cpos);
+	m_content->set_position(cpos);
 
 	Dimension cdim {
 	    std::max(dim.width - m_left_padding - m_right_padding, 1),
 	    std::max(dim.height - m_top_padding - m_bottom_padding, 1)
 	};
 
-	m_content->get().set_dimension(cdim);
+	m_content->set_dimension(cdim);
     }
 
     void PaddingBox::paint(cairo_t *cr) const
@@ -50,9 +50,9 @@ namespace toytk
 
     Dimension PaddingBox::get_preferred_dimension() const
     {
-	if (m_content.has_value())
+	if (m_content)
 	{
-	    auto dim = m_content->get().get_preferred_dimension();
+	    auto dim = m_content->get_preferred_dimension();
 	    return Dimension {
 		m_left_padding + m_right_padding + dim.width,
 		m_top_padding + m_bottom_padding + dim.height
@@ -69,30 +69,38 @@ namespace toytk
 
     void PaddingBox::for_each_child(void (*func)(Widget &, void *), void *data)
     {
-	if (m_content.has_value())
+	if (m_content)
 	{
-	    func(m_content->get(), data);
+	    func(*m_content, data);
 	}
     }
 
     std::optional<std::reference_wrapper<Widget>> PaddingBox::get_content() const
     {
-	return m_content;
+	if (m_content)
+	{
+	    return *m_content;
+	}
+	else
+	{
+	    return std::nullopt;
+	}
     }
 
-    void PaddingBox::set_content(Widget &widget)
+    void PaddingBox::set_content(PmrPtr<Widget> &&widget)
     {
 	reset_content();
-	m_content = widget;
-	widget.set_parent(*this);
+
+	m_content = std::move(widget);
+	own_child(m_content);
     }
 
     void PaddingBox::reset_content()
     {
-	if (m_content.has_value())
+	if (m_content)
 	{
-	    m_content->get().reset_parent();
-	    m_content = std::nullopt;
+	    unown_child(m_content);
+	    m_content.reset();
 	}
     }
 

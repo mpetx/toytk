@@ -15,11 +15,11 @@ namespace toytk
 	auto dim = get_dimension();
 	std::int32_t y_acc = pos.y;
 
-	for (auto child : m_children)
+	for (auto &child : m_children)
 	{
-	    auto cdim = child.get().get_preferred_dimension();
-	    child.get().set_position(Position { pos.x, y_acc });
-	    child.get().set_dimension(Dimension { dim.width, cdim.height });
+	    auto cdim = child->get_preferred_dimension();
+	    child->set_position(Position { pos.x, y_acc });
+	    child->set_dimension(Dimension { dim.width, cdim.height });
 	    y_acc += cdim.height;
 	}
     }
@@ -32,9 +32,9 @@ namespace toytk
     {
 	Dimension dim { 0, 0 };
 
-	for (auto child : m_children)
+	for (auto &child : m_children)
 	{
-	    auto cdim = child.get().get_preferred_dimension();
+	    auto cdim = child->get_preferred_dimension();
 	    dim.width = std::max(cdim.width, dim.width);
 	    dim.height += cdim.height;
 	}
@@ -44,28 +44,29 @@ namespace toytk
 
     void VerticalBox::for_each_child(void (*func)(Widget &, void *), void *data)
     {
-	std::ranges::for_each(m_children, [func, data](auto widget) {
-	    func(widget.get(), data);
+	std::ranges::for_each(m_children, [func, data](auto &widget) {
+	    func(*widget, data);
 	});
     }
 
-    void VerticalBox::add_child(Widget &child)
+    void VerticalBox::add_child(PmrPtr<Widget> &&child)
     {
-	m_children.push_back(child);
-	child.set_parent(*this);
+	m_children.push_back(std::move(child));
+	own_child(m_children[m_children.size() - 1]);
     }
 
-    void VerticalBox::remove_child(Widget &child)
+    void VerticalBox::delete_child(Widget &child)
     {
-	child.reset_parent();
-
-	auto i = std::ranges::find_if(m_children, [&child](auto widget) {
-	    return &widget.get() == &child;
+	auto i = std::ranges::find_if(m_children, [&child](auto &p) {
+	    return p.get() == &child;
 	});
 
-	if (i != m_children.end())
+	if (i == m_children.end())
 	{
-	    m_children.erase(i);
+	    return;
 	}
+
+	unown_child(*i);
+	m_children.erase(i);
     }
 }
