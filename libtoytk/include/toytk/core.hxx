@@ -191,6 +191,8 @@ namespace toytk
 
     namespace detail
     {
+	void widget_prepare_for_owned(Widget &);
+
 	struct BasicWidgetHandlerVisitor
 	{
 	    Widget &widget;
@@ -219,6 +221,7 @@ namespace toytk
 	int m_activation_count = 0;
 	int m_focus_count = 0;
 
+	friend void detail::widget_prepare_for_owned(Widget &);
 	friend detail::BasicWidgetHandlerVisitor;
 
     public:

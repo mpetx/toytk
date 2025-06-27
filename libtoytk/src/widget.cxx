@@ -7,6 +7,17 @@ namespace toytk
 {
     namespace detail
     {
+	void widget_prepare_for_owned(Widget &widget)
+	{
+	    widget.m_hover_count = 0;
+	    widget.m_activation_count = 0;
+	    widget.m_focus_count = 0;
+
+	    widget.for_each_child([](Widget &child, void *) {
+		widget_prepare_for_owned(child);
+	    }, nullptr);
+	}
+
 	void BasicWidgetHandlerVisitor::operator()(const PointerEnterEvent &) const
 	{
 	    ++widget.m_hover_count;
@@ -77,9 +88,7 @@ namespace toytk
 
     void Widget::own_child(PmrPtr<Widget> &child)
     {
-	child->m_hover_count = 0;
-	child->m_activation_count = 0;
-	child->m_focus_count = 0;
+	detail::widget_prepare_for_owned(*child);
 	child->m_parent = *this;
     }
 

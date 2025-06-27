@@ -128,6 +128,7 @@ namespace toytk
     void Window::set_root(PmrPtr<Widget> &&widget)
     {
 	m_root = std::move(widget);
+	detail::widget_prepare_for_owned(*m_root);
 
 	m_redraw_needed = true;
 	redraw();
