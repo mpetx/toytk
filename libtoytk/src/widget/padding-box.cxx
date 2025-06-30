@@ -41,11 +41,6 @@ namespace toytk
 
     void PaddingBox::paint(cairo_t *cr) const
     {
-	cairo_set_source_rgb(cr, 1, 1, 1);
-	auto pos = get_position();
-	auto dim = get_dimension();
-	cairo_rectangle(cr, pos.x, pos.y, dim.width, dim.height);
-	cairo_fill(cr);
     }
 
     Dimension PaddingBox::get_preferred_dimension() const
