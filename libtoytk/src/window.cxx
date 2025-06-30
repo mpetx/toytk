@@ -165,6 +165,9 @@ namespace toytk
 	detail::CairoSurfacePtr surface { cairo_image_surface_create_for_data(data, CAIRO_FORMAT_ARGB32, dim.width, dim.height, dim.width * 4) };
 	detail::CairoPtr cr { cairo_create(surface.get()) };
 
+	cairo_set_source_rgba(cr.get(), 0, 0, 0, 0);
+	cairo_paint(cr.get());
+
 	m_root->draw_recursively(cr.get());
 
 	cr.reset();
