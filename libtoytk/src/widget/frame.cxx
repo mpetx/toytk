@@ -94,21 +94,24 @@ namespace toytk
 	}
     }
 
-    void Frame::set_content(PmrPtr<Widget> &&widget)
+    PmrPtr<Widget> Frame::set_content(PmrPtr<Widget> &&widget)
     {
-	reset_content();
+	PmrPtr<Widget> old_content = reset_content();
 
 	m_content = std::move(widget);
 	own_child(m_content);
+
+	return old_content;
     }
 
-    void Frame::reset_content()
+    PmrPtr<Widget> Frame::reset_content()
     {
 	if (m_content)
 	{
 	    unown_child(m_content);
-	    m_content.reset();
 	}
+
+	return std::move(m_content);
     }
 
     const Font &Frame::get_font() const

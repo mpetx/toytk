@@ -55,7 +55,7 @@ namespace toytk
 	own_child(m_children[m_children.size() - 1]);
     }
 
-    void VerticalBox::delete_child(Widget &child)
+    PmrPtr<Widget> VerticalBox::remove_child(Widget &child)
     {
 	auto i = std::ranges::find_if(m_children, [&child](auto &p) {
 	    return p.get() == &child;
@@ -63,10 +63,13 @@ namespace toytk
 
 	if (i == m_children.end())
 	{
-	    return;
+	    return nullptr;
 	}
 
 	unown_child(*i);
+	PmrPtr<Widget> removed_child = std::move(*i);
 	m_children.erase(i);
+
+	return removed_child;
     }
 }

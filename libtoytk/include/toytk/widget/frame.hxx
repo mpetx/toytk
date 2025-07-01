@@ -43,8 +43,8 @@ namespace toytk
 	void for_each_child(void (*)(Widget &, void *), void *) override;
 
 	std::optional<std::reference_wrapper<Widget>> get_content() const;
-	void set_content(PmrPtr<Widget> &&);
-	void reset_content();
+	PmrPtr<Widget> set_content(PmrPtr<Widget> &&);
+	PmrPtr<Widget> reset_content();
 
 	const Font &get_font() const;
 	void set_font(const Font &);

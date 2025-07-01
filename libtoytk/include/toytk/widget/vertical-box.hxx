@@ -19,7 +19,7 @@ namespace toytk
 	void for_each_child(void (*)(Widget &, void *), void *) override;
 
 	void add_child(PmrPtr<Widget> &&);
-	void delete_child(Widget &);
+	PmrPtr<Widget> remove_child(Widget &);
     };
 }
 

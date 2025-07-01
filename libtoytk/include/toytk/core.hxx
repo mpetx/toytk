@@ -172,7 +172,8 @@ namespace toytk
 	void set_redraw_needed();
 
 	std::optional<std::reference_wrapper<Widget>> get_root() const;
-	void set_root(PmrPtr<Widget> &&);
+	PmrPtr<Widget> set_root(PmrPtr<Widget> &&);
+	PmrPtr<Widget> reset_root();
 
 	void redraw();
 

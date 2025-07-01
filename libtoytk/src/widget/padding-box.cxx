@@ -82,21 +82,24 @@ namespace toytk
 	}
     }
 
-    void PaddingBox::set_content(PmrPtr<Widget> &&widget)
+    PmrPtr<Widget> PaddingBox::set_content(PmrPtr<Widget> &&widget)
     {
-	reset_content();
+	PmrPtr<Widget> old_content = reset_content();
 
 	m_content = std::move(widget);
 	own_child(m_content);
+
+	return old_content;
     }
 
-    void PaddingBox::reset_content()
+    PmrPtr<Widget> PaddingBox::reset_content()
     {
 	if (m_content)
 	{
 	    unown_child(m_content);
-	    m_content.reset();
 	}
+
+	return std::move(m_content);
     }
 
     std::int32_t PaddingBox::get_top_padding() const

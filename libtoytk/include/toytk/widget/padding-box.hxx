@@ -23,8 +23,8 @@ namespace toytk
 	void for_each_child(void (*)(Widget &, void *), void *) override;
 
 	std::optional<std::reference_wrapper<Widget>> get_content() const;
-	void set_content(PmrPtr<Widget> &&);
-	void reset_content();
+	PmrPtr<Widget> set_content(PmrPtr<Widget> &&);
+	PmrPtr<Widget> reset_content();
 
 	std::int32_t get_top_padding() const;
 	std::int32_t get_bottom_padding() const;
