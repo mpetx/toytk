@@ -50,6 +50,8 @@ namespace toytk
 	detail::Display m_display;
 	std::string m_class;
 	std::unordered_map<wl_surface *, std::unique_ptr<Window>> m_windows;
+	std::vector<PmrPtr<Widget>> m_zombie_widgets;
+	
 	void initialize();
 
 	friend detail::Display &detail::application_get_display(Application &);
@@ -76,6 +78,8 @@ namespace toytk
 	std::reference_wrapper<Window> create_window(std::string_view);
 	bool has_window() const;
 	std::optional<std::reference_wrapper<Window>> get_window_from_surface(wl_surface *);
+
+	void add_zombie_widget(PmrPtr<Widget> &&);
     };
 
     namespace detail

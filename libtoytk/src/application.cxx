@@ -299,6 +299,8 @@ namespace toytk
 	    detail::ApplicationLowEventHandlerVisitor visitor { this_ };
 	    std::visit(visitor, event);
 
+	    this_.m_zombie_widgets.clear();
+
 	    for (auto i = this_.m_windows.begin(); i != this_.m_windows.end();)
 	    {
 		if (i->second->get_should_close())
@@ -395,5 +397,10 @@ namespace toytk
 	{
 	    return *i->second;
 	}
+    }
+
+    void Application::add_zombie_widget(PmrPtr<Widget> &&widget)
+    {
+	m_zombie_widgets.push_back(std::move(widget));
     }
 }
